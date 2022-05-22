@@ -1,0 +1,62 @@
+[package]
+name = "ascella-cli"
+version = "0.4.11"
+authors = ["Tricked-dev"]
+edition = "2021"
+homepage = "https://docs.ascella.host/ascella-desktop"
+license = "AGPL-3.0"
+readme = "README.md"
+repository = "https://github.com/ascellahost/app"
+description = "Ascella commandline app"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = []
+app = []
+
+[dependencies]
+anyhow = "1.0.57"
+chrono = "0.4.19"
+clap = { version = "3.1.18", features = ["derive", "cargo"] }
+home = "0.5.3"
+native-dialog = "0.6.2"
+reqwest = { version = "0.11.10", features = ["multipart"] }
+serde = { version = "1.0.133", features = ["derive"] }
+serde_json = "1.0.74"
+tokio = { version = "1.15.0", features = ["sync", "rt-multi-thread", "rt", "macros"] }
+toml = "0.5.8"
+winit = "0.26.1"
+
+[target.'cfg(not(linux))'.dependencies]
+clipboard2 = "0.1.1"
+
+
+[target.'cfg(unix)'.dependencies]
+openssl = { version = "0.10.38", features = ["vendored"] }
+libc = "0.2.112"
+
+[target.'cfg(windows)'.build-dependencies]
+winapi = "0.3.9"
+
+
+[package.metadata.generate-rpm]
+assets = [
+  { source = "target/release/ascella-desktop", dest = "/usr/bin/ascella", mode = "0755" },
+  { source = "LICENSE", dest = "/usr/share/doc/ascella/LICENSE", doc = true, mode = "0644" },
+  { source = "README.md", dest = "/usr/share/doc/ascella/README.md", doc = true, mode = "0644" },
+]
+
+[package.metadata.appimage]
+
+[package.metadata.deb]
+license-file = ["LICENSE", "4"]
+extended-description = """Ascella CommandLine app"""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+  ["target/release/ascella-desktop", "usr/bin/ascella", "755"],
+  ["LICENSE", "usr/share/doc/ascella/LICENSE", "644"],
+  ["README.md", "usr/share/doc/ascella/README.md", "644"],
+]

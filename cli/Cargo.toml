@@ -1,6 +1,6 @@
 [package]
 name = "ascella-cli"
-version = "0.5.0-pre1"
+version = "0.5.0-pre2"
 authors = ["Tricked-dev"]
 edition = "2021"
 homepage = "https://docs.ascella.host/ascella-desktop"

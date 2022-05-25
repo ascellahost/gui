@@ -53,6 +53,7 @@ impl radio::StyleSheet for Radio {
             dot_color: ACTIVE,
             border_width: 1.0,
             border_color: ACTIVE,
+            text_color: Some(TEXT),
         }
     }
 
@@ -236,7 +237,7 @@ impl checkbox::StyleSheet for Checkbox {
         checkbox::Style {
             background: if is_checked { ACTIVE } else { SURFACE }.into(),
             checkmark_color: TEXT,
-            text_color: TEXT,
+            text_color: Some(TEXT),
             border_radius: 2.0,
             border_width: 1.0,
             border_color: ACTIVE,

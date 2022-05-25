@@ -1,6 +1,6 @@
 [package]
 name = "ascella-desktop"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Tricked-dev"]
 edition = "2021"
 homepage = "https://docs.ascella.host/ascella-desktop"
@@ -12,12 +12,12 @@ description = "Ascella desktop app uploader"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { git = "https://github.com/iced-rs/iced", rev = "4db0f4a570a1fb3398062c78770c542d9efb8a64", features = ["tokio", "debug", "glow"] }
 native-dialog = "0.6.2"
 rustc-hash = "1.1.0"
 tokio = { version = "1.15.0", features = ["sync"] }
 winit = "0.26.1"
-ascella-cli = {path="../cli", features=["app"]}
+ascella-cli = {path="../cli", features=["app"], version="0.5.1"}
+iced = { version = "0.4.2", features = ["tokio", "glow"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.112"

@@ -82,57 +82,8 @@ jobs:
             aarch64-linux-gnu-strip \
             /target/${{ matrix.target }}/release/$BIN_NAME
 
-      - name: Install Wix
-        if: matrix.build == 'x86_64-windows'
-        uses: actions/checkout@v2
-        with:
-          repository: fbarresi/wix
-          path: wix
-      - name: Setup .NET Core
-        if: matrix.build == 'x86_64-windows'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.101
-      - name: install cargo wix
-        if: matrix.build == 'x86_64-windows'
-        run: cargo install cargo-wix
-      - name: run wix command
-        if: matrix.build == 'x86_64-windows'
-        run: cargo wix init
-      - name: run wix command
-        if: matrix.build == 'x86_64-windows'
-        run: cargo wix
-
       - name: make dist
         run: mkdir dist
-
-      - name: Run install cargo-deb
-        if: matrix.build == 'x86_64-linux'
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cargo-deb
-
-      - name: Create deb file
-        if: matrix.build == 'x86_64-linux'
-        run: cargo deb
-
-      - name: cp deb file
-        if: matrix.build == 'x86_64-linux'
-        run: cp target/debian/ascella-desktop_* dist/
-
-      - name: Run install pkgbuild
-        if: matrix.build == 'x86_64-linux'
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cargo-pkgbuild
-      - name: Make pkgbuild
-        if: matrix.build == 'x86_64-linux'
-        run: cargo pkgbuild
-      - name: cp pkgbuild
-        if: matrix.build == 'x86_64-linux'
-        run: mv PKGBUILD dist/
 
       - name: Build archive
         shell: bash

@@ -13,9 +13,14 @@ use std::thread;
 use std::time::Duration;
 use util::screenshot;
 
+pub mod user;
 pub mod util;
-
+pub use anyhow;
 pub use clap;
+pub use colored;
+pub use reqwest;
+pub use serde_json;
+pub use tabular;
 
 static SELECTION_TEMPORARY_FILE: &str = "/tmp/selection-tmp.png";
 
@@ -412,6 +417,8 @@ pub enum Commands {
     Upload(Upload),
     /// Update your confiog
     Config(Config),
+    /// View your profile
+    Profile,
     #[cfg(feature = "app")]
     /// Open the ascella app
     App,

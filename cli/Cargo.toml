@@ -19,18 +19,21 @@ app = []
 anyhow = "1.0.57"
 chrono = "0.4.19"
 clap = { version = "3.1.18", features = ["derive", "cargo"] }
+colored = "2.0.0"
 home = "0.5.3"
+lazy_static = "1.4.0"
 native-dialog = "0.6.2"
-reqwest = { version = "0.11.10", features = ["multipart"] }
+reqwest = { version = "0.11.10", features = ["multipart", "json"] }
 serde = { version = "1.0.133", features = ["derive"] }
 serde_json = "1.0.74"
+tabular = "0.2.0"
+thiserror = "1.0.31"
 tokio = { version = "1.15.0", features = ["sync", "rt-multi-thread", "rt", "macros"] }
 toml = "0.5.8"
 winit = "0.26.1"
 
 [target.'cfg(not(linux))'.dependencies]
 clipboard2 = "0.1.1"
-
 
 [target.'cfg(unix)'.dependencies]
 openssl = { version = "0.10.38", features = ["vendored"] }

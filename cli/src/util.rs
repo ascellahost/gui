@@ -1,15 +1,24 @@
-use std::fs;
+use std::fmt::Display;
 use std::io::{Error, ErrorKind, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::{env, fs};
 
 use crate::{session_type, take_ss, ScreenshotKind, SessionKind};
 use anyhow::Result;
+use clap::crate_version;
 use home::home_dir;
+use lazy_static::lazy_static;
 use native_dialog::{MessageDialog, MessageType};
+use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::multipart::{Form, Part};
+use reqwest::{Client, Method, RequestBuilder};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+lazy_static! {
+    static ref CLIENT: OnceCell<Client> = OnceCell::new();
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AscellaConfig {
@@ -102,22 +111,69 @@ pub async fn screenshot(t: ScreenshotKind) -> Result<()> {
     Ok(())
 }
 
-pub async fn upload<P: AsRef<Path>>(path: P) -> Result<String, Error> {
+use thiserror::Error;
+use tokio::sync::OnceCell;
+
+#[derive(Error, Debug)]
+pub enum AscellaError {
+    #[error("Invalid config, config file not found. use the config subcommand to set the config!")]
+    NoInvalidConfig,
+    #[error("Config is not valid toml!")]
+    ConfigParsingError,
+    #[error("Invalid auth token! please upload your new config!")]
+    InvalidAuthToken,
+}
+
+pub fn get_config() -> Result<AscellaConfig, AscellaError> {
     let mut write_path = home_dir().unwrap();
     write_path.extend(&[".ascella", "config.toml"]);
 
     let config_raw = if let Ok(config_raw) = std::fs::read_to_string(write_path) {
         config_raw
     } else {
-        println!("config not detected please upload your config");
-        MessageDialog::new()
-      .set_type(MessageType::Info)
-      .set_title("config not detected please upload your config")
-      .set_text("config not detected please upload your config\n\nPlease add a config file you can do this using the gui")
-      .show_alert()
-      .unwrap();
-        return Ok("".to_owned());
+        return Err(AscellaError::NoInvalidConfig);
     };
+    if let Ok(config) = toml::from_str(&config_raw) {
+        Ok(config)
+    } else {
+        Err(AscellaError::ConfigParsingError)
+    }
+}
+
+pub fn get_client() -> Result<Client> {
+    match CLIENT.get() {
+        Some(client) => Ok(client.clone()),
+        None => {
+            let config = get_config()?;
+            let mut headers = HeaderMap::new();
+            headers.append(
+                "authorization",
+                HeaderValue::from_str(&config.auth.expect("No auth"))?,
+            );
+
+            let client = reqwest::ClientBuilder::new()
+                .default_headers(headers)
+                .user_agent(format!(
+                    "Ascella-uploader/{} ( {} )",
+                    crate_version!(),
+                    env::consts::OS
+                ))
+                .build()?;
+            CLIENT.set(client)?;
+            get_client()
+        }
+    }
+}
+const PATH: &str = "https://ascella.wtf/v2/ascella";
+
+#[inline]
+pub fn do_req<T: Display>(method: Method, path: T) -> Result<RequestBuilder> {
+    let req = get_client()?.request(method, format!("https://ascella.wtf/v2/ascella/{}", path));
+
+    Ok(req)
+}
+
+pub async fn upload<P: AsRef<Path>>(path: P) -> Result<String> {
     let bytes = fs::read(path);
     if bytes.is_err() {
         return Ok(String::new());
@@ -125,40 +181,21 @@ pub async fn upload<P: AsRef<Path>>(path: P) -> Result<String, Error> {
 
     let form = Form::new().part("file", Part::bytes(bytes.unwrap()));
 
-    let config: AscellaConfig = if let Ok(config) = toml::from_str(&config_raw) {
-        config
-    } else {
-        println!("Your config is invalid please use a valid ascella config");
-        MessageDialog::new()
-            .set_type(MessageType::Info)
-            .set_title("invalid config")
-            .set_text("Your config is invalid please use a valid ascella config")
-            .show_alert()
-            .unwrap();
-        return Ok("".to_owned());
-    };
-
-    let client = reqwest::Client::new();
-    let resp = client
-        .post("https://ascella.wtf/v2/ascella/upload")
+    let resp = do_req(Method::POST, "upload")?
         .multipart(form)
-        .header("authorization", &config.auth.unwrap())
-        .header("user-agent", "Ascella-uploader")
         .send()
-        .await
-        .unwrap();
+        .await?;
 
     let text = resp.text().await.unwrap();
     let r: Value = serde_json::from_str(&text).unwrap();
     let url = r["url"].as_str().expect("Invalid image type");
-
     println!("{url}");
 
     let session_kid = session_type();
 
     let backend = match session_kid {
         SessionKind::Wayland => Some(ClipboardBackend::Wayland),
-        SessionKind::X11 => Some(ClipboardBackend::Wayland),
+        SessionKind::X11 => Some(ClipboardBackend::Xorg),
         _ => None,
     };
 
@@ -171,6 +208,7 @@ pub enum ClipboardBackend {
     Wayland,
     Xorg,
 }
+
 #[cfg(not(target_os = "linux"))]
 fn copy(t: String, backend: Option<ClipboardBackend>) {
     use clipboard2::{Clipboard, SystemClipboard};

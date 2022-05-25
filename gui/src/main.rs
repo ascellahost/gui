@@ -1,14 +1,20 @@
-use std::{fs, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf};
 
 use ascella_cli::{
     clap::Parser,
-    util::{update_config, upload},
+    colored::Colorize,
+    reqwest::Method,
+    serde_json::Value,
+    tabular::{Row, Table},
+    user::User,
+    util::{do_req, update_config, upload, AscellaError},
     *,
 };
 use ascella_desktop::app::AscellaDesktop;
 use iced::{Application, Settings};
+
 #[tokio::main]
-async fn main() -> iced::Result {
+async fn main() -> anyhow::Result<()> {
     let res = Cli::parse();
 
     let res = match res.command {
@@ -26,6 +32,25 @@ async fn main() -> iced::Result {
             );
             println!("\nFile uploaded");
             println!("Have a nice day!");
+            Ok(())
+        }
+        Commands::Profile => {
+            let user = do_req(Method::POST, "verify")?.send().await?.text().await?;
+            if let Ok(user) = serde_json::from_str::<User>(&user) {
+                let mut table = Table::new("{:<}  {:<}");
+                serde_json::from_slice::<HashMap<String, Value>>(&serde_json::to_vec(&user)?)?
+                    .into_iter()
+                    .for_each(|(k, v)| {
+                        table.add_row(
+                            Row::new()
+                                .with_cell(k.green())
+                                .with_cell(&v.to_string().red()),
+                        );
+                    });
+                println!("{table}")
+            } else {
+                return Err(AscellaError::InvalidAuthToken.into());
+            }
             Ok(())
         }
         Commands::Config(Config { file }) => {

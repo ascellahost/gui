@@ -43,7 +43,9 @@ pub fn update_config<T: Into<PathBuf>>(path: T) -> Result<(), Error> {
 
     let mut write_path = home_dir().unwrap();
 
-    write_path.extend(&[".ascella", "config.toml"]);
+    write_path.extend(&[".ascella"]);
+    fs::create_dir_all(&write_path)?;
+    write_path.extend(&["config.toml"]);
     std::fs::write(
         &write_path,
         toml::to_string_pretty(&config).map_err(|x| Error::new(ErrorKind::Other, x.to_string()))?,
@@ -164,11 +166,13 @@ pub fn get_client() -> Result<Client> {
         }
     }
 }
+
+/// Change this if your self hosting ascella or using it for your own project!
 const PATH: &str = "https://ascella.wtf/v2/ascella";
 
 #[inline]
 pub fn do_req<T: Display>(method: Method, path: T) -> Result<RequestBuilder> {
-    let req = get_client()?.request(method, format!("https://ascella.wtf/v2/ascella/{}", path));
+    let req = get_client()?.request(method, format!("{PATH}/{}", path));
 
     Ok(req)
 }

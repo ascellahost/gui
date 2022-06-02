@@ -1,6 +1,6 @@
 [package]
 name = "ascella-desktop"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Tricked-dev"]
 edition = "2021"
 homepage = "https://docs.ascella.host/ascella-desktop"
@@ -16,7 +16,7 @@ native-dialog = "0.6.2"
 rustc-hash = "1.1.0"
 tokio = { version = "1.15.0", features = ["sync"] }
 winit = "0.26.1"
-ascella-cli = {path="../cli", features=["app"], version="0.5.1"}
+ascella-cli = {path="../cli", features=["app"], version="0.5.2"}
 iced = { version = "0.4.2", features = ["tokio", "glow"] }
 
 [target.'cfg(unix)'.dependencies]

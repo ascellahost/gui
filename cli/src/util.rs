@@ -168,7 +168,7 @@ pub fn get_client() -> Result<Client> {
 }
 
 /// Change this if your self hosting ascella or using it for your own project!
-const PATH: &str = "https://ascella.wtf/v2/ascella";
+const PATH: &str = "https://api.ascella.host/v2/ascella";
 
 #[inline]
 pub fn do_req<T: Display>(method: Method, path: T) -> Result<RequestBuilder> {

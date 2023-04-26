@@ -1,21 +1,23 @@
-use anyhow::Result;
-use ascella_cli::user::User;
-use ascella_cli::util::{do_req, update_config, upload, AscellaError};
-use ascella_cli::{make_screenshot, Cli, Commands, Config, Screenshot, ScreenshotKind, Upload};
-use clap::Parser;
-use colored::*;
-use reqwest::Method;
-use serde_json::Value;
-use std::collections::HashMap;
-use std::fs;
-use std::path::PathBuf;
-use tabular::{Row, Table};
+use std::{collections::HashMap, fs, path::PathBuf};
+
+use ascella_cli::{
+    clap::Parser,
+    colored::Colorize,
+    reqwest::Method,
+    serde_json::Value,
+    tabular::{Row, Table},
+    user::User,
+    util::{do_req, update_config, upload, AscellaError},
+    *,
+};
+use ascella_desktop::app::AscellaDesktop;
+use iced::{Application, Settings};
 
 #[tokio::main]
-pub async fn main() -> Result<()> {
+async fn main() -> anyhow::Result<()> {
     let res = Cli::parse();
 
-    match res.command {
+    let res = match res.command {
         Commands::Area(Screenshot { delay }) => make_screenshot(ScreenshotKind::Area, delay).await,
         Commands::Window(Screenshot { delay }) => {
             make_screenshot(ScreenshotKind::Window, delay).await
@@ -36,15 +38,15 @@ pub async fn main() -> Result<()> {
             let user = do_req(Method::POST, "verify")?.send().await?.text().await?;
             if let Ok(user) = serde_json::from_str::<User>(&user) {
                 let mut table = Table::new("{:<}  {:<}");
-                for (k, v) in
-                    serde_json::from_slice::<HashMap<String, Value>>(&serde_json::to_vec(&user)?)?
-                {
-                    table.add_row(
-                        Row::new()
-                            .with_cell(k.green())
-                            .with_cell(&v.to_string().red()),
-                    );
-                }
+                serde_json::from_slice::<HashMap<String, Value>>(&serde_json::to_vec(&user)?)?
+                    .into_iter()
+                    .for_each(|(k, v)| {
+                        table.add_row(
+                            Row::new()
+                                .with_cell(k.green())
+                                .with_cell(&v.to_string().red()),
+                        );
+                    });
                 println!("{table}")
             } else {
                 return Err(AscellaError::InvalidAuthToken.into());
@@ -65,6 +67,13 @@ pub async fn main() -> Result<()> {
             };
             Ok(())
         }
-        _ => Ok(()),
+        Commands::App => {
+            AscellaDesktop::run(Settings::default()).unwrap();
+            Ok(())
+        }
+    };
+    if let Err(e) = res {
+        eprintln!("{e:?}")
     }
+    Ok(())
 }

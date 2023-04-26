@@ -24,6 +24,7 @@ lazy_static! {
 pub struct AscellaConfig {
     #[serde(rename = "authorization")]
     pub auth: Option<String>,
+    pub auth: Option<String>,
     pub headers: Option<String>,
     pub command: Option<String>,
 }
@@ -74,11 +75,11 @@ pub async fn screenshot(t: ScreenshotKind) -> Result<()> {
     } else {
         println!("config not detected please upload your config");
         MessageDialog::new()
-      .set_type(MessageType::Info)
-      .set_title("config not detected please upload your config")
-      .set_text("config not detected please upload your config\n\nPlease add a config file you can do this using the gui")
-      .show_alert()
-      .unwrap();
+        .set_type(MessageType::Info)
+        .set_title("config not detected please upload your config")
+        .set_text("config not detected please upload your config\n\nPlease add a config file you can do this using the gui")
+        .show_alert()
+        .unwrap();
         return Ok(());
     };
 

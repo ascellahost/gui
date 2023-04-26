@@ -1,15 +1,28 @@
 # Ascella desktop
 
-## faq
+|                       |               |
+| :-------------------- | :------------ |
+| ![settings][settings] | ![home][home] |
+| ![about][about]       |
 
-- can i use this for my own image uploader
-  - Sure just link back to my repo to show where you got it from!
-  - License terms still apply
+[settings]: https://user-images.githubusercontent.com/72335827/234695281-c09ce67e-eed3-48b6-8089-0120d57dde2f.png
+[home]: https://user-images.githubusercontent.com/72335827/234695319-de351b0b-bdde-4461-8434-6c8effb7679d.png
+[about]: https://user-images.githubusercontent.com/72335827/234695358-a488d48a-ea89-45b8-8034-dd6476c43a2b.png
 
-## Docs
+## Cool libraries used
 
-[https://docs.ascella.host/ascella-desktop](https://docs.ascella.host/ascella-desktop)
+- [egui-notify](https://github.com/ItsEthra/egui-notify)
+- [egui-tracing](https://github.com/grievouz/egui_tracing)
+- [egui-file](https://lib.rs/crates/egui_file)
+
+and ofcourse [egui](https://github.com/emilk/egui/)
 
 ## Contributing
 
-Contribution are welcome improving the ux/ui
+Contribution are very welcomed even if its just grammar fixes
+
+## Links
+
+- [Ascella Website](https://ascella.host/)
+- [Ascella Discord](https://discord.gg/BDxd9AuHpr)
+- [Ascella Github](https://github.com/ascellahost/ascellav3)

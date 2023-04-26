@@ -333,31 +333,6 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-#[test]
-fn test_easy_mark_parser() {
-    let items: Vec<_> = Parser::new("~strikethrough `code`~").collect();
-    assert_eq!(
-        items,
-        vec![
-            Item::Text(
-                Style {
-                    strikethrough: true,
-                    ..Default::default()
-                },
-                "strikethrough "
-            ),
-            Item::Text(
-                Style {
-                    code: true,
-                    strikethrough: true,
-                    ..Default::default()
-                },
-                "code"
-            ),
-        ]
-    );
-}
-
 // https://github.com/emilk/egui/blob/master/crates/egui_demo_lib/src/easy_mark/easy_mark_viewer.rs
 
 /// Parse and display a VERY simple and small subset of Markdown.

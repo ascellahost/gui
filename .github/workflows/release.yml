@@ -5,8 +5,8 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 env:
-  BIN_NAME: ascella-desktop
-  PROJECT_NAME: ascella-desktop
+  BIN_NAME: ascella
+  PROJECT_NAME: ascella
   REPO_NAME: ascellahost/desktop
 
 jobs:
@@ -94,7 +94,7 @@ jobs:
             ls target/${{ matrix.target }}
 
 
-            cp target/wix/ascella-desktop* dist/
+            cp target/wix/ascella* dist/
             cp "target/${{ matrix.target }}/release/$BIN_NAME.exe" "dist/"
           else
             cp "target/${{ matrix.target }}/release/$BIN_NAME" "dist/"
@@ -102,7 +102,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2.2.4
         with:
-          name: ascella-desktop-${{ matrix.build }}
+          name: ascella-${{ matrix.build }}
           path: dist
 
   publish:
@@ -117,7 +117,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
 
-      - run: ls -al ascella-desktop-*
+      - run: ls -al ascella-*
 
       - name: Calculate tag name
         run: |
@@ -139,8 +139,8 @@ jobs:
           mkdir dist
 
 
-          for dir in ascella-desktop-* ; do
-              platform=${dir#"ascella-desktop-"}
+          for dir in ascella-* ; do
+              platform=${dir#"ascella-"}
               if [[ $platform =~ "windows" ]]; then
                   exe=".exe"
               fi
@@ -149,12 +149,12 @@ jobs:
               mkdir tmp/$pkgname
               # cp LICENSE README.md tmp/$pkgname
 
-              [ -f ascella-desktop-$platform/ascella-desktop-* ] && mv ascella-desktop-$platform/ascella-desktop-* tmp/$pkgname/
-              [ -f ascella-desktop-$platform/ascella-desktop_* ] && mv ascella-desktop-$platform/ascella-desktop_* tmp/$pkgname/
-              [ -f ascella-desktop-$platform/ascella-desktop-*.msi ] && mv ascella-desktop-$platform/*.msi tmp/$pkgname/
-              [ -f ascella-desktop-$platform/PKGBUILD ] && mv ascella-desktop-$platform/PKGBUILD tmp/$pkgname/
+              [ -f ascella-$platform/ascella-* ] && mv ascella-$platform/ascella-* tmp/$pkgname/
+              [ -f ascella-$platform/ascella_* ] && mv ascella-$platform/ascella_* tmp/$pkgname/
+              [ -f ascella-$platform/ascella-*.msi ] && mv ascella-$platform/*.msi tmp/$pkgname/
+              [ -f ascella-$platform/PKGBUILD ] && mv ascella-$platform/PKGBUILD tmp/$pkgname/
 
-              mv ascella-desktop-$platform/$BIN_NAME$exe tmp/$pkgname
+              mv ascella-$platform/$BIN_NAME$exe tmp/$pkgname
               chmod +x tmp/$pkgname/$BIN_NAME$exe
 
               if [ "$exe" = "" ]; then

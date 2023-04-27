@@ -21,6 +21,24 @@ and ofcourse [egui](https://github.com/emilk/egui/)
 
 Contribution are very welcomed even if its just grammar fixes
 
+## CLI
+
+```
+Ascella GUI using no subcommand opens the gui?
+
+Usage: ascella [COMMAND]
+
+Commands:
+  area
+  window
+  screen
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
 ## Links
 
 - [Ascella Website](https://ascella.host/)

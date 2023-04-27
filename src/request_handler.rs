@@ -26,7 +26,12 @@ pub async fn handle_event(
                 })
                 .ok();
         }
-        Request::Screenshot { r_type, send, config } => {
+        Request::Screenshot {
+            r_type,
+            send,
+            config,
+            print,
+        } => {
             let cmd = r_type.cmd_from_type(send);
             let mut args = cmd.1.split_whitespace();
 
@@ -62,34 +67,33 @@ pub async fn handle_event(
                 return Ok(());
             }
 
-            let file = file_to_body(tokio::fs::File::open(&cmd.0).await.unwrap());
+            let file = file_to_body(tokio::fs::File::open(&cmd.0).await?);
             let form = multipart::Form::new().part(
                 "file",
                 Part::stream(file)
                     .file_name(PathBuf::from(cmd.0).file_name().unwrap().to_string_lossy().to_string())
-                    .mime_str("image/png")
-                    .unwrap(),
+                    .mime_str("image/png")?,
             );
 
             let mut headers = headermap_from_hashmap(config.headers.iter());
             if !config.api_key.is_empty() {
-                headers.insert("ascella-token", HeaderValue::from_str(&config.api_key).unwrap());
+                headers.insert("ascella-token", HeaderValue::from_str(&config.api_key)?);
             }
 
             let res = client
                 .post(config.request_url)
-                // .post("http://127.0.0.1:8787/api/v3/upload")
                 .headers(headers)
                 .multipart(form)
                 .send()
-                .await
-                .unwrap()
+                .await?
                 .text()
-                .await
-                .unwrap();
+                .await?;
             tracing::debug!("Image uploaded {}", res);
             let response: UploadResponse = serde_json::from_str(&res).unwrap();
             copy(response.url.clone()).await;
+            if print {
+                println!("{}", response.url)
+            };
             sender
                 .send(RequestResponse::Toast(Toast::success(format!(
                     "Image uploaded {}",

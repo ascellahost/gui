@@ -57,6 +57,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
                                 r_type: app.config.s_type.clone(),
                                 send: SendScreenshot::Area,
                                 config: app.config.clone(),
+                                print: false,
                             })
                             .ok();
                     }
@@ -68,6 +69,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
                                 r_type: app.config.s_type.clone(),
                                 send: SendScreenshot::Window,
                                 config: app.config.clone(),
+                                print: false,
                             })
                             .ok();
                     }
@@ -79,6 +81,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
                                 r_type: app.config.s_type.clone(),
                                 send: SendScreenshot::Screen,
                                 config: app.config.clone(),
+                                print: false,
                             })
                             .ok();
                     }

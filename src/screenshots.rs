@@ -41,9 +41,9 @@ impl ScreenshotType {
             file.clone(),
             match self {
                 Self::Flameshot => format!("flameshot gui -c -p {}", file),
-                Self::Spectacle => format!("spectacle -ar {}", file),
-                Self::Scrot => format!("scrot -s {}", file),
-                Self::Screencapture => format!("screencapture -R0,0,500,500 {}", file),
+                Self::Spectacle => format!("spectacle -rbno {}", file),
+                Self::Scrot => format!("scrot --select {}", file),
+                Self::Screencapture => format!("screencapture -S {}", file),
                 Self::Custom { area, .. } => area.replace("{file}", &file),
             },
         )
@@ -55,9 +55,9 @@ impl ScreenshotType {
             file.clone(),
             match self {
                 Self::Flameshot => format!("flameshot gui -p {}", file),
-                Self::Spectacle => format!("spectacle -b -p {}", file),
+                Self::Spectacle => format!("spectacle -fbno {}", file),
                 Self::Scrot => format!("scrot {}", file),
-                Self::Screencapture => format!("screencapture -m {}", file),
+                Self::Screencapture => format!("screencapture -S {}", file),
                 Self::Custom { screen, .. } => screen.replace("{file}", &file),
             },
         )
@@ -69,10 +69,10 @@ impl ScreenshotType {
             file.clone(),
             match self {
                 Self::Flameshot => format!("flameshot gui -p {} -w", file),
-                Self::Spectacle => format!("spectacle -b -p {} -w", file),
-                Self::Scrot => format!("scrot -u {}", file),
+                Self::Spectacle => format!("spectacle -abno {}", file),
+                Self::Scrot => format!("scrot --border --focused {}", file),
                 Self::Screencapture => {
-                    format!("screencapture -mw {}", file)
+                    format!("screencapture -w {}", file)
                 }
                 Self::Custom { window, .. } => window.replace("{file}", &file),
             },

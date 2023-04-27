@@ -9,6 +9,16 @@
 [home]: https://user-images.githubusercontent.com/72335827/234695319-de351b0b-bdde-4461-8434-6c8effb7679d.png
 [about]: https://user-images.githubusercontent.com/72335827/234695358-a488d48a-ea89-45b8-8034-dd6476c43a2b.png
 
+## Requirements
+
+### X11
+
+You need to install xclip
+
+### Wayland
+
+You need to install wl-copy
+
 ## Cool libraries used
 
 - [egui-notify](https://github.com/ItsEthra/egui-notify)

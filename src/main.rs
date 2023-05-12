@@ -163,13 +163,12 @@ fn main() -> Result<()> {
         });
         return Ok(());
     }
-
     let collector: EventCollector = egui_tracing::EventCollector::default();
     tracing_subscriber::registry()
         .with(EventFilter(collector.clone()))
         .init();
 
-    fs::create_dir_all(ascella_dir())?;
+    fs::create_dir_all(ascella_dir().join("images"))?;
 
     let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel::<Request>();
     let (sender_1, receiver_1) = tokio::sync::mpsc::unbounded_channel::<RequestResponse>();

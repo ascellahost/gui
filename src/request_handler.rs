@@ -101,7 +101,12 @@ pub async fn handle_event(
                 ))))
                 .ok();
         }
-        Request::SaveConfig(config) => config.save().await.unwrap(),
+        Request::SaveConfig(config) => {
+            config.save().await?;
+            sender
+                .send(RequestResponse::Toast(Toast::success("Config saved".to_string())))
+                .ok();
+        }
     };
     Ok(())
 }

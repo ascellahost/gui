@@ -17,6 +17,7 @@ pub struct AscellaConfig {
     pub headers: HashMap<String, String>,
     pub debug: bool,
     pub s_type: ScreenshotType,
+    pub webserver: bool,
 }
 
 impl AscellaConfig {

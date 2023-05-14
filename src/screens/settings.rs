@@ -3,7 +3,7 @@ use eframe::egui::{self, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 use egui_file::FileDialog;
 
-use crate::{MyApp, Request, ScreenshotType};
+use crate::{ui::MyApp, Request, ScreenshotType};
 
 pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> {
     ui.heading("Settings");

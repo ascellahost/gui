@@ -2,7 +2,7 @@ use anyhow::Result;
 use eframe::egui::{self, Frame, Margin, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use crate::{theme::THEME, MyApp, Request, SendScreenshot};
+use crate::{theme::THEME, ui::MyApp, Request, SendScreenshot};
 
 pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> {
     ui.heading("Home");

@@ -2,7 +2,7 @@ use anyhow::Result;
 use eframe::egui::{self, Frame, Margin, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 
-use crate::{theme::THEME, ui::MyApp, Request, SendScreenshot};
+use crate::{ui::MyApp, Request, SendScreenshot};
 
 pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> {
     ui.heading("Home");
@@ -46,7 +46,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
         ui.small("No user info available");
     }
     Frame::none()
-        .fill(THEME.neutral)
+        .fill(app.theme.neutral)
         .inner_margin(Margin::symmetric(30.0, 12.0))
         .show(ui, |ui| {
             ui.columns(3, |columns| {

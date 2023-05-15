@@ -18,6 +18,7 @@ pub struct AscellaConfig {
     pub debug: bool,
     pub s_type: ScreenshotType,
     pub webserver: bool,
+    pub theme: u8,
 }
 
 impl AscellaConfig {

@@ -3,7 +3,7 @@ use eframe::egui::{self, RichText, Ui};
 use egui_extras::{Column, TableBuilder};
 use egui_file::FileDialog;
 
-use crate::{ui::MyApp, Request, ScreenshotType};
+use crate::{ui::MyApp, utils::theme_to_name, Request, ScreenshotType};
 
 pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> {
     ui.heading("Settings");
@@ -45,6 +45,24 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
                     },
                     "Custom",
                 );
+            })
+            .response
+    });
+
+    ui.horizontal(|ui| {
+        let theme_label = ui.label("Theme Color ");
+        egui::ComboBox::from_id_source(theme_label.id)
+            .selected_text(theme_to_name(app.config.theme))
+            .width(120.0)
+            .show_ui(ui, |ui| {
+                macro_rules! themes {
+                    ($($value:expr),* ) => {
+                        $(
+                            ui.selectable_value(&mut app.config.theme, $value, theme_to_name($value));
+                        )*
+                    };
+                }
+                themes![0, 1, 2, 3, 4, 5];
             })
             .response
     });

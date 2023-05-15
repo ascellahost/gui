@@ -15,7 +15,8 @@ use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use crate::{
     ascella_config::AscellaConfig,
     easy_mark, screens,
-    theme::{set_theme, THEME},
+    theme::{set_theme, Theme},
+    utils::theme_number_to_theme,
     Request, RequestResponse, RequestType,
 };
 
@@ -33,6 +34,7 @@ pub struct MyApp {
     pub config: AscellaConfig,
     pub opened_file: Option<PathBuf>,
     pub open_file_dialog: Option<FileDialog>,
+    pub theme: Theme,
 
     pub sender: UnboundedSender<Request>,
     pub receiver: UnboundedReceiver<RequestResponse>,
@@ -54,6 +56,7 @@ impl MyApp {
     ) -> Self {
         Self {
             menu: Menu::Home,
+            theme: theme_number_to_theme(config.theme),
             config,
             sender,
             receiver,
@@ -92,7 +95,9 @@ struct AscellaUserEndpointResult<T> {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        set_theme(ctx, THEME);
+        self.theme = theme_number_to_theme(self.config.theme);
+        let theme = self.theme;
+        set_theme(ctx, theme);
 
         ctx.set_pixels_per_point(1.25);
 
@@ -137,18 +142,18 @@ impl eframe::App for MyApp {
         egui::TopBottomPanel::bottom("bottom_nav")
             .show_separator_line(false)
             .show(ctx, |ui| {
-                fn btn(text: &str, active: bool) -> Button {
+                let btn = |text: &str, active: bool| {
                     Button::new(text)
                         .min_size(Vec2::from((95.0, 30.0)))
-                        .fill(if active { THEME.primary } else { THEME.neutral })
+                        .fill(if active { theme.primary } else { theme.neutral })
                         .rounding(3.0)
-                }
+                };
                 ui.allocate_ui_with_layout(
                     egui::vec2(ui.available_width(), 0.0),
                     egui::Layout::top_down(egui::Align::LEFT),
                     |ui| {
                         Frame::none()
-                            .fill(THEME.base_200)
+                            .fill(theme.base_200)
                             .inner_margin(Margin::symmetric(30.0, 10.0))
                             .rounding(Rounding {
                                 nw: 20.0,
@@ -164,7 +169,7 @@ impl eframe::App for MyApp {
                                                 columns[$index].vertical_centered(|ui| {
                                                     let active =self.menu == $menu;
                                                     if active {
-                                                        ui.visuals_mut().override_text_color = Some(THEME.text_accent);
+                                                        ui.visuals_mut().override_text_color = Some(theme.text_accent);
                                                     }
                                                     if ui.add(btn($label, active)).clicked() {
                                                         self.menu = $menu;

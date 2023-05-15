@@ -118,6 +118,7 @@ fn main() -> Result<()> {
         .set_default("debug", false)?
         .set_default("headers", HashMap::<String, String>::default())?
         .set_default("webserver", true)?
+        .set_default("theme", 2)?
         .set_default(
             "s_type",
             toml::from_str::<config::Value>(&toml::to_string(&ScreenshotType::Flameshot)?)?,

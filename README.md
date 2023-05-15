@@ -8,7 +8,7 @@
 [settings]: https://user-images.githubusercontent.com/72335827/234695281-c09ce67e-eed3-48b6-8089-0120d57dde2f.png
 [home]: https://user-images.githubusercontent.com/72335827/234695319-de351b0b-bdde-4461-8434-6c8effb7679d.png
 [about]: https://user-images.githubusercontent.com/72335827/234695358-a488d48a-ea89-45b8-8034-dd6476c43a2b.png
-[img1]: https://github.com/ascellahost/gui/assets/72335827
+[img1]: https://github.com/ascellahost/gui/assets/72335827/33dd2393-4df8-47f7-b92e-0afed6b2cc57
 [img2]: https://github.com/ascellahost/gui/assets/72335827/d4e2c81e-a7e3-40db-a254-29e47fb65fe7
 [img3]: https://github.com/ascellahost/gui/assets/72335827/2b5c93de-3b69-4984-b871-d6ae4d154e4a
 

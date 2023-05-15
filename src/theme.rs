@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: UNLICENSED
+// do whatever you want with this code go add themes to your application!
+// settings.rs&utils.rs is still agpl but you can take some inspiration from that tho
+
 use eframe::{
     egui,
     egui::{epaint, style, Color32, Visuals},

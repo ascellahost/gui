@@ -1,4 +1,7 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: UNLICENSE
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
+// use this code under any of the above license
 // do whatever you want with this code go add themes to your application!
 // settings.rs&utils.rs is still agpl but you can take some inspiration from that tho
 

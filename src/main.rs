@@ -70,6 +70,7 @@ pub enum Request {
 #[derive(Clone)]
 pub enum RequestType {
     RetrieveUser,
+    RequestPage,
 }
 
 pub struct EventFilter(egui_tracing::EventCollector);

@@ -9,6 +9,7 @@ use eframe::{
     egui,
     egui::{epaint, style, Color32, Visuals},
 };
+
 /// Apply the given theme to a [`Context`](egui::Context).
 /// from my testing this doesn't take more than 3µs so doesnt need to be optimized
 pub fn set_theme(ctx: &egui::Context, theme: Theme) {
@@ -61,8 +62,6 @@ fn make_widget_visual(old: style::WidgetVisuals, theme: &Theme, bg_fill: egui::C
     }
 }
 
-// FIXME: Theme should be `Copy` since it isn't big enough to generate a call to `memcpy`,
-// do this when egui releases a minor version
 /// The colors for a theme variant.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Theme {
@@ -151,5 +150,49 @@ pub mod themes {
         text_base: hex_color!("#FFFFFF"),
         text_accent: hex_color!("#F1FAEE"),
         light: false,
+    };
+    pub const EARTH_THEME: Theme = Theme {
+        primary: hex_color!("#6CBB5A"),
+        secondary: hex_color!("#F8C54D"),
+        accent: hex_color!("#E87D59"),
+        neutral: hex_color!("#D2D2D2"),
+        base_100: hex_color!("#F0F0F0"),
+        base_200: hex_color!("#EAEAEA"),
+        text_base: hex_color!("#333333"),
+        text_accent: hex_color!("#FFFFFF"),
+        light: true,
+    };
+    pub const FIRE_THEME: Theme = Theme {
+        primary: hex_color!("#FF5722"),
+        secondary: hex_color!("#FF8A65"),
+        accent: hex_color!("#FFC107"),
+        neutral: hex_color!("#212121"),
+        base_100: hex_color!("#1D3557"),
+        base_200: hex_color!("#0B1A2C"),
+        text_base: hex_color!("#FFFFFF"),
+        text_accent: hex_color!("#000000"),
+        light: false,
+    };
+    pub const FOREST_THEME: Theme = Theme {
+        primary: hex_color!("#4CAF50"),
+        secondary: hex_color!("#8BC34A"),
+        accent: hex_color!("#FFC107"),
+        neutral: hex_color!("#607D8B"),
+        base_100: hex_color!("#F5F5F5"),
+        base_200: hex_color!("#E0E0E0"),
+        text_base: hex_color!("#333333"),
+        text_accent: hex_color!("#FFFFFF"),
+        light: true,
+    };
+    pub const SUNSET_THEME: Theme = Theme {
+        primary: hex_color!("#FFC107"),
+        secondary: hex_color!("#FF9800"),
+        accent: hex_color!("#F44336"),
+        neutral: hex_color!("#9C27B0"),
+        base_100: hex_color!("#F5F5F5"),
+        base_200: hex_color!("#E0E0E0"),
+        text_base: hex_color!("#212121"),
+        text_accent: hex_color!("#FFFFFF"),
+        light: true,
     };
 }

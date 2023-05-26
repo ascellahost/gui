@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, time::Duration};
 
 use eframe::{
     egui::{self, Button, Frame, Margin, RichText, Rounding, Window},
@@ -14,7 +14,8 @@ use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 use crate::{
     ascella_config::AscellaConfig,
-    easy_mark, screens,
+    easy_mark,
+    screens::{self, history::AscellaFile},
     theme::{set_theme, Theme},
     utils::theme_number_to_theme,
     Request, RequestResponse, RequestType,
@@ -26,7 +27,7 @@ pub enum Menu {
     Home,
     Settings,
     About,
-    Screenshots,
+    History,
 }
 
 pub struct MyApp {
@@ -45,6 +46,9 @@ pub struct MyApp {
     pub collector: EventCollector,
 
     pub toasts: Toasts,
+
+    pub history: Vec<AscellaFile>,
+    pub history_index: u64,
 }
 
 impl MyApp {
@@ -69,6 +73,8 @@ impl MyApp {
                 .with_padding(Vec2::from((5.0, 5.0)))
                 .with_margin(Vec2::from((2.0, 2.0)))
                 .with_anchor(egui_notify::Anchor::TopLeft),
+            history: Vec::new(),
+            history_index: 0,
         }
     }
 }
@@ -131,11 +137,7 @@ impl eframe::App for MyApp {
             match self.menu {
                 Menu::Home => screens::home::screen(self, ui, ctx).unwrap(),
                 Menu::About => easy_mark::easy_mark(ui, include_str!("../ABOUT.md")),
-                Menu::Screenshots => {
-                    ui.heading("Screenshots");
-                    ui.label("W.I.P");
-                    ui.small("Check back later for screenshots!");
-                }
+                Menu::History => screens::history::screen(self, ui, ctx).unwrap(),
                 Menu::Settings => screens::settings::screen(self, ui, ctx).unwrap(),
             }
         });
@@ -182,7 +184,7 @@ impl eframe::App for MyApp {
                                         (0, "Home", Menu::Home),
                                         (1, "Settings", Menu::Settings),
                                         (2, "About", Menu::About),
-                                        (3, "Screenshots", Menu::Screenshots)
+                                        (3, "History", Menu::History)
                                     }
                                 });
                             });
@@ -248,6 +250,26 @@ impl eframe::App for MyApp {
                     } else {
                         self.toasts
                             .error(format!("Failed receiving user from token {}", status,));
+                    }
+                }
+                RequestType::RequestPage => {
+                    if status.is_success() {
+                        let data: AscellaUserEndpointResult<Vec<AscellaFile>> =
+                            serde_json::from_slice(&content).unwrap();
+                        if data.data.is_empty() {
+                            self.toasts
+                                .error("Reached End....")
+                                .set_duration(Some(Duration::from_secs(1)));
+                            self.history_index -= 1;
+                        } else {
+                            self.toasts
+                                .success("Files loaded....")
+                                .set_duration(Some(Duration::from_secs(1)));
+                        }
+                        self.history.extend(data.data);
+                    } else {
+                        self.toasts
+                            .error(format!("Failed receiving history from token {}", status,));
                     }
                 }
             },

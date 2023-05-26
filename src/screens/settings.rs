@@ -62,7 +62,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
                         )*
                     };
                 }
-                themes![0, 1, 2, 3, 4, 5];
+                themes![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
             })
             .response
     });

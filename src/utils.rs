@@ -19,6 +19,10 @@ pub fn theme_number_to_theme(theme: u8) -> Theme {
         3 => themes::SUNRISE_THEME,
         4 => themes::OCEANIC_THEME,
         5 => themes::GALACTIC_THEME,
+        6 => themes::EARTH_THEME,
+        7 => themes::FIRE_THEME,
+        8 => themes::FOREST_THEME,
+        9 => themes::SUNSET_THEME,
         _ => panic!("Invalid theme"),
     }
 }
@@ -31,6 +35,10 @@ pub fn theme_to_name(theme: u8) -> String {
         3 => "Sunrise".to_string(),
         4 => "Oceanic".to_string(),
         5 => "Galactic".to_string(),
+        6 => "Earth".to_string(),
+        7 => "Fire".to_string(),
+        8 => "Forest".to_string(),
+        9 => "Sunset".to_string(),
         _ => panic!("Invalid theme"),
     }
 }

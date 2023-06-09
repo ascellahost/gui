@@ -1,6 +1,5 @@
 use std::{io::ErrorKind, path::PathBuf};
 
-use anyhow::Ok;
 use egui_notify::Toast;
 use reqwest::{
     header::{HeaderMap, HeaderName, HeaderValue},
@@ -37,7 +36,7 @@ pub async fn handle_event(
             let mut args = cmd.1.split_whitespace();
 
             let command = match Command::new(args.next().unwrap()).args(args).output().await {
-                core::result::Result::Ok(r) => r,
+                Ok(r) => r,
                 Err(e) => {
                     let msg = if e.kind() == ErrorKind::NotFound {
                         format!(
@@ -63,7 +62,7 @@ pub async fn handle_event(
             }
 
             match upload_file(PathBuf::from(cmd.0), &config, client, print).await {
-                core::result::Result::Ok(res) => {
+                Ok(res) => {
                     sender
                     .send(RequestResponse::Toast(Toast::success(format!(
                         "Image uploaded {}",

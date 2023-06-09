@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
-use std::{collections::HashMap, env, fs, thread, time::Duration};
+use std::{collections::HashMap, env, fs, thread, time::Duration, process};
 
 use anyhow::{anyhow, Result};
 use ascella_config::AscellaConfig;
@@ -143,6 +143,17 @@ fn main() -> Result<()> {
                 Commands::Area { delay } => (delay, SendScreenshot::Area),
                 Commands::Window { delay } => (delay, SendScreenshot::Window),
                 Commands::Screen { delay } => (delay, SendScreenshot::Screen),
+                Commands::Upload { file } => {
+                    match request_handler::upload_file(file, &config, &client, true).await {
+                        Ok(_) => {
+                            process::exit(0);
+                        }
+                        Err(e) => {
+                            println!("{}", e);
+                            process::exit(1);
+                        }
+                    }
+                },
             };
 
             if let Some(delay) = delay {

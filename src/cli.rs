@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 
 /// Ascella GUI using no subcommand opens the gui
@@ -17,4 +19,6 @@ pub enum Commands {
     Window { delay: Option<u64> },
     /// Screenshot a screen
     Screen { delay: Option<u64> },
+    /// Upload a file
+    Upload { file: PathBuf }
 }

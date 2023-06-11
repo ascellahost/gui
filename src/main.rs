@@ -183,12 +183,14 @@ fn main() -> Result<()> {
 
     let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel::<Request>();
     let (sender_1, receiver_1) = tokio::sync::mpsc::unbounded_channel::<RequestResponse>();
-
+    let webserver = config.webserver;
     thread::Builder::new()
         .name("ascella-async".to_owned())
         .spawn(move || {
             create_rt().expect("How did this happen").block_on(async {
-                tokio::spawn(start_server(sender_1.clone()));
+                if webserver {
+                    tokio::spawn(start_server(sender_1.clone()));
+                }
 
                 while let Some(data) = receiver.recv().await {
                     if let Err(e) = handle_event(data, &client, &sender_1).await {

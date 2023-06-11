@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
-use std::{collections::HashMap, env, fs, thread, time::Duration, process};
+use std::{collections::HashMap, env, fs, process, thread, time::Duration};
 
 use anyhow::{anyhow, Result};
 use ascella_config::AscellaConfig;
@@ -26,6 +26,7 @@ use tracing_subscriber::{
     Layer,
 };
 use utils::ascella_dir;
+use webserver::start_server;
 
 mod ascella_config;
 mod cli;
@@ -37,6 +38,7 @@ mod screenshots;
 mod theme;
 mod ui;
 mod utils;
+mod webserver;
 pub enum RequestResponse {
     Request {
         content: Bytes,
@@ -44,6 +46,7 @@ pub enum RequestResponse {
         r_type: RequestType,
     },
     Toast(Toast),
+    UpdateConfigFromStringSxcu(Vec<u8>),
 }
 
 pub enum SendScreenshot {
@@ -90,7 +93,7 @@ where
 
 #[derive(Deserialize)]
 #[allow(dead_code)]
-struct UploadResponse {
+pub struct UploadResponse {
     url: String,
     delete: String,
     metadata: String,
@@ -136,6 +139,7 @@ fn main() -> Result<()> {
         .build()
         .expect("Reqwest client did not built");
 
+    // subcommand branch
     if let Some(sub) = arg.command {
         create_rt()?.block_on(async {
             let (sender, _) = tokio::sync::mpsc::unbounded_channel::<RequestResponse>();
@@ -143,15 +147,13 @@ fn main() -> Result<()> {
                 Commands::Area { delay } => (delay, SendScreenshot::Area),
                 Commands::Window { delay } => (delay, SendScreenshot::Window),
                 Commands::Screen { delay } => (delay, SendScreenshot::Screen),
-                Commands::Upload { file } => {
-                    match request_handler::upload_file(file, &config, &client, true).await {
-                        Ok(_) => {
-                            process::exit(0);
-                        }
-                        Err(e) => {
-                            println!("{}", e);
-                            process::exit(1);
-                        }
+                Commands::Upload { file } => match request_handler::upload_file(file, &config, &client, true).await {
+                    Ok(_) => {
+                        process::exit(0);
+                    }
+                    Err(e) => {
+                        println!("{}", e);
+                        process::exit(1);
                     }
                 },
             };
@@ -171,6 +173,7 @@ fn main() -> Result<()> {
         });
         return Ok(());
     }
+
     let collector: EventCollector = egui_tracing::EventCollector::default();
     tracing_subscriber::registry()
         .with(EventFilter(collector.clone()))
@@ -185,6 +188,8 @@ fn main() -> Result<()> {
         .name("ascella-async".to_owned())
         .spawn(move || {
             create_rt().expect("How did this happen").block_on(async {
+                tokio::spawn(start_server(sender_1.clone()));
+
                 while let Some(data) = receiver.recv().await {
                     if let Err(e) = handle_event(data, &client, &sender_1).await {
                         tracing::error!("{e:?}");

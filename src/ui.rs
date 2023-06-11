@@ -191,33 +191,43 @@ impl eframe::App for MyApp {
                     },
                 );
             });
+
+        macro_rules! i_hate_borrow_checker {
+            ($data:expr) => {
+                let raw: Value = serde_json::from_slice($data).unwrap();
+
+                self.config.headers = serde_json::from_value(raw["Headers"].clone()).unwrap();
+
+                self.config.request_url = raw["RequestURL"].as_str().unwrap().to_owned();
+
+                if let Some(token) = self.config.headers.remove("ascella-token") {
+                    self.config.api_key = token.clone();
+                    let mut req = reqwest::Request::new(
+                        Method::GET,
+                        format!("{}/me", self.config.api_url).parse().unwrap(),
+                    );
+                    req.headers_mut()
+                        .append("ascella-token", HeaderValue::from_str(&token).unwrap());
+
+                    self.sender
+                        .send(Request::DoRequest {
+                            r_type: RequestType::RetrieveUser,
+                            request: req,
+                        })
+                        .ok();
+                }
+                self.toasts.info("Updated Config");
+
+                self.sender.send(Request::SaveConfig(self.config.clone())).ok();
+            };
+        }
+
         if let Some(dialog) = &mut self.open_file_dialog {
             if dialog.show(ctx).selected() {
                 if let Some(file) = dialog.path() {
                     self.opened_file = Some(file.clone());
-                    let raw: Value = serde_json::from_slice(&fs::read(file).unwrap()).unwrap();
-
-                    self.config.headers = serde_json::from_value(raw["Headers"].clone()).unwrap();
-
-                    self.config.request_url = raw["RequestURL"].as_str().unwrap().to_owned();
-
-                    if let Some(token) = self.config.headers.remove("ascella-token") {
-                        self.config.api_key = token.clone();
-                        let mut req =
-                            reqwest::Request::new(Method::GET, format!("{}/me", self.config.api_url).parse().unwrap());
-                        req.headers_mut()
-                            .append("ascella-token", HeaderValue::from_str(&token).unwrap());
-
-                        self.sender
-                            .send(Request::DoRequest {
-                                r_type: RequestType::RetrieveUser,
-                                request: req,
-                            })
-                            .ok();
-                    }
-                    self.toasts.info("Updated Config");
-
-                    self.sender.send(Request::SaveConfig(self.config.clone())).ok();
+                    let raw = &fs::read(file).unwrap();
+                    i_hate_borrow_checker!(raw);
                 }
             }
         }
@@ -275,6 +285,9 @@ impl eframe::App for MyApp {
             },
             Ok(RequestResponse::Toast(toast)) => {
                 self.toasts.add(toast);
+            }
+            Ok(RequestResponse::UpdateConfigFromStringSxcu(data)) => {
+                i_hate_borrow_checker!(&data);
             }
             _ => {}
         }

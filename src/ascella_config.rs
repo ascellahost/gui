@@ -22,6 +22,7 @@ pub struct AscellaConfig {
     pub optimize_png: bool,
     pub optimize_timeout: u64,
     pub console_logging: bool,
+    pub notifications_enabled: bool,
 }
 
 impl AscellaConfig {

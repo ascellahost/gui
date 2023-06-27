@@ -83,6 +83,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
             ui.text_edit_singleline(window).labelled_by(token_label.id);
         });
     }
+    ui.horizontal(|ui| ui.checkbox(&mut app.config.notifications_enabled, "Notifications Enabled"));
 
     egui::CollapsingHeader::new("Advanced").show(ui, |ui| {
         ui.horizontal(|ui| {
@@ -90,6 +91,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
             ui.text_edit_singleline(&mut app.config.api_url)
                 .labelled_by(url_label.id);
         });
+
 
         ui.horizontal(|ui| ui.checkbox(&mut app.config.debug, "Debug Mode"));
         ui.heading(RichText::new("Headers").size(15.0));

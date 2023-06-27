@@ -1,12 +1,13 @@
 use std::{convert::Infallible, net::SocketAddr};
 
-use crate::RequestResponse;
+use crate::{utils::ascella_notif, RequestResponse};
 use anyhow::Result;
 use hyper::{
     server::conn::AddrStream,
     service::{make_service_fn, service_fn},
     Body, Request, Response, Server,
 };
+
 use tokio::sync::mpsc::UnboundedSender;
 
 fn create_res(body: Body) -> Response<Body> {
@@ -33,6 +34,7 @@ async fn handle_req(req: Request<Body>, sender: UnboundedSender<RequestResponse>
             sender
                 .send(RequestResponse::UpdateConfigFromStringSxcu(body.to_vec()))
                 .ok();
+            ascella_notif().body("Config Imported successfully").show()?;
             return Ok(create_res(Body::empty()));
         }
 
@@ -70,6 +72,6 @@ pub async fn start_server(sender: UnboundedSender<RequestResponse>) -> Result<()
     let server = Server::bind(&addr).serve(make_service);
 
     // And run forever...
-    server.await;
+    let _ = server.await;
     Ok(())
 }

@@ -1,6 +1,7 @@
 use std::{env, path::PathBuf};
 
 use home::home_dir;
+use notify_rust::Notification;
 
 use crate::theme::{themes, Theme};
 
@@ -41,4 +42,7 @@ pub fn theme_to_name(theme: u8) -> String {
         9 => "Sunset".to_string(),
         _ => panic!("Invalid theme"),
     }
+}
+pub fn ascella_notif() -> Notification {
+    Notification::new().summary("Ascella").clone()
 }

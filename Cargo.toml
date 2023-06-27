@@ -1,6 +1,6 @@
 [package]
 name = "ascella"
-version = "0.11.0"
+version = "0.12.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -51,6 +51,7 @@ hyper = { version = "0.14.26", features = ["http1", "server"] }
 oxipng = { version = "8.0.0", default-features = false, features = [
     "parallel"
 ] }
+notify-rust = { version = "4.8.0", features = ["images"] }
 
 [target.'cfg(not(linux))'.dependencies]
 clipboard2 = "0"

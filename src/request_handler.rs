@@ -8,7 +8,9 @@ use reqwest::{
 use tokio::{process::Command, sync::mpsc::UnboundedSender};
 use tracing::info;
 
-use crate::{ascella_config::AscellaConfig, clipboard::copy, Request, RequestResponse, UploadResponse};
+use crate::{
+    ascella_config::AscellaConfig, clipboard::copy, utils::ascella_notif, Request, RequestResponse, UploadResponse,
+};
 
 pub async fn handle_event(
     data: Request,
@@ -156,6 +158,15 @@ pub async fn upload_file(
     if print {
         println!("Image uploaded {}", response.url);
         println!("Delete URL: {}", response.delete);
+    }
+    if config.notifications_enabled {
+        let mut notif = &mut ascella_notif();
+        notif = notif.body("Upload success, url copied to clipboard!");
+        #[cfg(all(unix, not(target_os = "macos")))]
+        {
+            notif = notif.image_path(&path.to_string_lossy());
+        };
+        notif.show()?;
     }
     Ok(response)
 }

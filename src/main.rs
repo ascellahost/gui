@@ -126,6 +126,7 @@ fn main() -> Result<()> {
         .set_default("optimize_png", false)?
         .set_default("optimize_timeout", 100)?
         .set_default("console_logging", false)?
+        .set_default("notifications_enabled", true)?
         .set_default(
             "s_type",
             toml::from_str::<config::Value>(&toml::to_string(&ScreenshotType::Flameshot)?)?,

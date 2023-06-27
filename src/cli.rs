@@ -20,5 +20,5 @@ pub enum Commands {
     /// Screenshot a screen
     Screen { delay: Option<u64> },
     /// Upload a file
-    Upload { file: PathBuf }
+    Upload { file: PathBuf },
 }

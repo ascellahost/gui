@@ -1,6 +1,6 @@
 [package]
 name = "ascella"
-version = "0.10.0"
+version = "0.11.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -40,10 +40,17 @@ tracing = "0"
 toml = "0"
 anyhow = "1"
 toml_edit = { version = "0", features = ["serde"] }
-tracing-subscriber = { version = "0.3.17", features = ["parking_lot", "once_cell", "tracing", "env-filter"] }
+tracing-subscriber = { version = "0.3.17", features = [
+    "parking_lot",
+    "once_cell",
+    "tracing",
+    "env-filter"
+] }
 clap = { version = "4", features = ["derive", "env", "cargo"] }
 hyper = { version = "0.14.26", features = ["http1", "server"] }
-oxipng = { version = "8.0.0", default-features = false, features = ["parallel"] }
+oxipng = { version = "8.0.0", default-features = false, features = [
+    "parallel"
+] }
 
 [target.'cfg(not(linux))'.dependencies]
 clipboard2 = "0"

@@ -112,6 +112,14 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
                     });
                 }
             });
+        ui.heading(RichText::new("PNG Optimizations").size(15.0));
+        ui.horizontal(|ui| ui.checkbox(&mut app.config.optimize_png, "Enabled"));
+        ui.horizontal(|ui| {
+            let url_label = ui.label("Timeout (ms) ");
+            ui.add(egui::DragValue::new(&mut app.config.optimize_timeout))
+                .labelled_by(url_label.id);
+        });
+        ui.label("Want to save me some storage space or are you uploading big images turn this on, it will make uploading a fair bit slower though!")
     });
 
     if ui.button("save").clicked() {

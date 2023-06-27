@@ -19,6 +19,9 @@ pub struct AscellaConfig {
     pub s_type: ScreenshotType,
     pub webserver: bool,
     pub theme: u8,
+    pub optimize_png: bool,
+    pub optimize_timeout: u64,
+    pub console_logging: bool,
 }
 
 impl AscellaConfig {

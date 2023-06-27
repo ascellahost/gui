@@ -1,4 +1,4 @@
-use std::{io::ErrorKind, path::PathBuf};
+use std::{ffi::OsStr, io::ErrorKind, os::unix::prelude::OsStrExt, path::PathBuf, time::Duration};
 
 use egui_notify::Toast;
 use reqwest::{
@@ -6,8 +6,9 @@ use reqwest::{
     multipart::{self, Part},
 };
 use tokio::{process::Command, sync::mpsc::UnboundedSender};
+use tracing::info;
 
-use crate::{clipboard::copy, Request, RequestResponse, UploadResponse, ascella_config::AscellaConfig};
+use crate::{ascella_config::AscellaConfig, clipboard::copy, Request, RequestResponse, UploadResponse};
 
 pub async fn handle_event(
     data: Request,
@@ -64,23 +65,21 @@ pub async fn handle_event(
             match upload_file(PathBuf::from(cmd.0), &config, client, print).await {
                 Ok(res) => {
                     sender
-                    .send(RequestResponse::Toast(Toast::success(format!(
-                        "Image uploaded {}",
-                        res.url
-                    ))))
-                    .ok();
-                },
+                        .send(RequestResponse::Toast(Toast::success(format!(
+                            "Image uploaded {}",
+                            res.url
+                        ))))
+                        .ok();
+                }
                 Err(e) => {
                     sender
-                    .send(RequestResponse::Toast(Toast::error(format!(
-                        "Failed uploading image\n{:?}",
-                        e
-                    ))))
-                    .ok();
+                        .send(RequestResponse::Toast(Toast::error(format!(
+                            "Failed uploading image\n{:?}",
+                            e
+                        ))))
+                        .ok();
                 }
             }
-
-            
         }
         Request::SaveConfig(config) => {
             config.save().await?;
@@ -92,22 +91,50 @@ pub async fn handle_event(
     Ok(())
 }
 
-pub async fn upload_file(path: PathBuf, config: &AscellaConfig, client: &reqwest::Client, print: bool)
--> anyhow::Result<UploadResponse> {
-    fn file_to_body(file: tokio::fs::File) -> reqwest::Body {
-        let stream = tokio_util::codec::FramedRead::new(file, tokio_util::codec::BytesCodec::new());
+pub async fn upload_file(
+    path: PathBuf,
+    config: &AscellaConfig,
+    client: &reqwest::Client,
+    print: bool,
+) -> anyhow::Result<UploadResponse> {
+    let mut form = multipart::Form::new();
+    let filename = path.file_name().unwrap().to_string_lossy().to_string();
+    if path.extension() == Some(OsStr::from_bytes(b"png")) && config.optimize_png {
+        info!("Optimizing PNG");
+        let file = std::fs::read(&path)?;
+        let file_ln = file.len();
+        let now = std::time::Instant::now();
+        let buf = oxipng::optimize_from_memory(
+            &file,
+            &oxipng::Options {
+                timeout: Some(Duration::from_millis(config.optimize_timeout)),
+                strip: oxipng::Headers::Safe,
+                force: true,
+                ..oxipng::Options::from_preset(4)
+            },
+        )?;
+        info!(
+            "Optimized image in {}ms before: {file_ln} after: {}",
+            now.elapsed().as_millis(),
+            buf.len()
+        );
+        form = form.part("file", Part::bytes(buf).file_name(filename).mime_str("image/png")?);
+    } else {
+        fn file_to_body(file: tokio::fs::File) -> reqwest::Body {
+            let stream = tokio_util::codec::FramedRead::new(file, tokio_util::codec::BytesCodec::new());
 
-        reqwest::Body::wrap_stream(stream)
+            reqwest::Body::wrap_stream(stream)
+        }
+
+        let file = file_to_body(tokio::fs::File::open(&path).await?);
+        form = form.part(
+            "file",
+            Part::stream(file)
+                .file_name(filename)
+                //TODO infer mime
+                .mime_str("image/png")?,
+        );
     }
-
-    let file = file_to_body(tokio::fs::File::open(&path).await?);
-    let form = multipart::Form::new().part(
-        "file",
-        Part::stream(file)
-            .file_name(path.file_name().unwrap().to_string_lossy().to_string())
-            .mime_str("image/png")?,
-    );
-
     let mut headers = headermap_from_hashmap(config.headers.iter());
     if !config.api_key.is_empty() {
         headers.insert("ascella-token", HeaderValue::from_str(&config.api_key)?);
@@ -126,7 +153,7 @@ pub async fn upload_file(path: PathBuf, config: &AscellaConfig, client: &reqwest
     let response: UploadResponse = serde_json::from_str(&res).unwrap();
     copy(response.url.clone()).await;
 
-    if print { 
+    if print {
         println!("Image uploaded {}", response.url);
         println!("Delete URL: {}", response.delete);
     }

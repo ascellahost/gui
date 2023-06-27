@@ -123,6 +123,9 @@ fn main() -> Result<()> {
         .set_default("headers", HashMap::<String, String>::default())?
         .set_default("webserver", true)?
         .set_default("theme", 2)?
+        .set_default("optimize_png", false)?
+        .set_default("optimize_timeout", 100)?
+        .set_default("console_logging", false)?
         .set_default(
             "s_type",
             toml::from_str::<config::Value>(&toml::to_string(&ScreenshotType::Flameshot)?)?,
@@ -175,9 +178,16 @@ fn main() -> Result<()> {
     }
 
     let collector: EventCollector = egui_tracing::EventCollector::default();
-    tracing_subscriber::registry()
-        .with(EventFilter(collector.clone()))
-        .init();
+    if !config.console_logging {
+        tracing_subscriber::registry()
+            .with(EventFilter(collector.clone()))
+            .init();
+    } else {
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::DEBUG)
+            .compact()
+            .init();
+    }
 
     fs::create_dir_all(ascella_dir().join("images"))?;
 

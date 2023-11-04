@@ -7,7 +7,7 @@ use crate::{ui::MyApp, utils::theme_to_name, Request, ScreenshotType};
 
 pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> {
     ui.heading("Settings");
-    ui.hyperlink_to("Config Creator", "https://ascella.host/config_wizard/");
+    ui.hyperlink_to("Config Creator", "https://picup.click/config_wizard/");
     if ui.button("Import Config from file").clicked() {
         let mut dialog = FileDialog::open_file(app.opened_file.clone())
             .resizable(false)

@@ -8,7 +8,7 @@ Ascella GUI is licensed under the [AGPL](https://www.gnu.org/licenses/agpl-3.0.e
 
 # Links
 
-- [Ascella Website](https://ascella.host/)
+- [Ascella Website](https://picup.clicks/)
 - [Ascella Discord](https://discord.gg/BDxd9AuHpr)
 - [Ascella Github](https://github.com/ascellahost/ascellav3)
 - [Ascella GUI Github](https://github.com/ascellahost/gui)

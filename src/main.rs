@@ -116,8 +116,8 @@ fn main() -> Result<()> {
         .add_source(File::new(ascella_dir().join("ascella.toml").to_str().unwrap(), FileFormat::Toml).required(false))
         .add_source(File::new(ascella_dir().join("ascella.json").to_str().unwrap(), FileFormat::Json5).required(false))
         .add_source(Environment::default())
-        .set_default("api_url", "https://api.ascella.host/api/v3")?
-        .set_default("request_url", "https://api.ascella.host/api/v3/upload")?
+        .set_default("api_url", "https://api.picup.click/api/v3")?
+        .set_default("request_url", "https://api.picup.click/api/v3/upload")?
         .set_default("api_key", "")?
         .set_default("debug", false)?
         .set_default("headers", HashMap::<String, String>::default())?

@@ -16,7 +16,7 @@ fn create_res(body: Body) -> Response<Body> {
 
     res.headers_mut().insert(
         "Access-Control-Allow-Origin",
-        hyper::header::HeaderValue::from_static("https://ascella.host"),
+        hyper::header::HeaderValue::from_static("https://picup.click"),
     );
     res.headers_mut().insert(
         "Access-Control-Allow-Methods",

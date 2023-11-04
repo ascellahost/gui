@@ -21,7 +21,7 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
     for file in &app.history {
         ui.horizontal(|ui| {
             ui.label(&file.name);
-            ui.hyperlink(format!("https://ascella.host/v/{}", file.vanity));
+            ui.hyperlink(format!("https://picup.click/v/{}", file.vanity));
             // if ui.hyperlink(format!("https://ascella.host/v/{}".file.vanity)) {
             // open_url
             // }

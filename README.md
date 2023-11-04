@@ -55,6 +55,6 @@ Options:
 
 ## Links
 
-- [Ascella Website](https://ascella.host/)
+- [Ascella Website](https://picup.click/)
 - [Ascella Discord](https://discord.gg/BDxd9AuHpr)
 - [Ascella Github](https://github.com/ascellahost/ascellav3)

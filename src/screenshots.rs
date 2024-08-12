@@ -41,7 +41,7 @@ impl ScreenshotType {
             file.clone(),
             match self {
                 Self::Flameshot => format!("flameshot gui -c -p {}", file),
-                Self::Spectacle => format!("spectacle -rbno {}", file),
+                Self::Spectacle => format!("spectacle -rcbno {}", file),
                 Self::Scrot => format!("scrot --select {}", file),
                 Self::Screencapture => format!("screencapture -S {}", file),
                 Self::Custom { area, .. } => area.replace("{file}", &file),
@@ -55,7 +55,7 @@ impl ScreenshotType {
             file.clone(),
             match self {
                 Self::Flameshot => format!("flameshot gui -p {}", file),
-                Self::Spectacle => format!("spectacle -fbno {}", file),
+                Self::Spectacle => format!("spectacle -fcbno {}", file),
                 Self::Scrot => format!("scrot {}", file),
                 Self::Screencapture => format!("screencapture -S {}", file),
                 Self::Custom { screen, .. } => screen.replace("{file}", &file),

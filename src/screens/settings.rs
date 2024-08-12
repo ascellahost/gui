@@ -8,21 +8,35 @@ use crate::{ui::MyApp, utils::theme_to_name, Request, ScreenshotType};
 pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> {
     ui.heading("Settings");
     ui.hyperlink_to("Config Creator", "https://picup.click/config_wizard/");
-    if ui.button("Import Config from file").clicked() {
-        let mut dialog = FileDialog::open_file(app.opened_file.clone())
-            .resizable(false)
-            .show_rename(false)
-            .filter(Box::new(|f| {
-                f.extension().map_or(false, |ext| ext == "json" || ext == "sxcu")
-            }));
-        dialog.open();
-        app.open_file_dialog = Some(dialog);
-    }
+
     ui.horizontal(|ui| {
-        let token_label = ui.label("Ascella Token (Optional) ");
-        ui.text_edit_singleline(&mut app.config.api_key)
+        let token_label = ui.label("S3 Secret ");
+        ui.text_edit_singleline(&mut app.config.s3_secret_key)
             .labelled_by(token_label.id);
     });
+    ui.horizontal(|ui| {
+        let token_label = ui.label("S3 Access ");
+        ui.text_edit_singleline(&mut app.config.s3_access_key)
+            .labelled_by(token_label.id);
+    });
+    ui.horizontal(|ui| {
+        let token_label = ui.label("S3 Bucket ");
+        ui.text_edit_singleline(&mut app.config.s3_bucket)
+            .labelled_by(token_label.id);
+    });
+
+    ui.horizontal(|ui| {
+        let token_label = ui.label("S3 URL ");
+        ui.text_edit_singleline(&mut app.config.s3_url)
+            .labelled_by(token_label.id);
+    });
+
+    ui.horizontal(|ui| {
+        let token_label = ui.label("Public URL ");
+        ui.text_edit_singleline(&mut app.config.public_url)
+            .labelled_by(token_label.id);
+    });
+
     ui.horizontal(|ui| {
         let screenshot_label = ui.label("Screenshot tool ");
         egui::ComboBox::from_id_source(screenshot_label.id)
@@ -86,34 +100,10 @@ pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> 
     ui.horizontal(|ui| ui.checkbox(&mut app.config.notifications_enabled, "Notifications Enabled"));
 
     egui::CollapsingHeader::new("Advanced").show(ui, |ui| {
-        ui.horizontal(|ui| {
-            let url_label = ui.label("Ascella API URL ");
-            ui.text_edit_singleline(&mut app.config.api_url)
-                .labelled_by(url_label.id);
-        });
-
-
         ui.horizontal(|ui| ui.checkbox(&mut app.config.debug, "Debug Mode"));
         ui.heading(RichText::new("Headers").size(15.0));
 
-        TableBuilder::new(ui)
-            .striped(true)
-            .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
-            .column(Column::initial(30.0))
-            .column(Column::remainder())
-            .min_scrolled_height(0.0)
-            .body(|mut body| {
-                for (name, value) in &mut app.config.headers.iter_mut() {
-                    body.row(24.0, |mut row| {
-                        row.col(|ui| {
-                            ui.label(name);
-                        });
-                        row.col(|ui| {
-                            ui.text_edit_singleline(value);
-                        });
-                    });
-                }
-            });
+
         ui.heading(RichText::new("PNG Optimizations").size(15.0));
         ui.horizontal(|ui| ui.checkbox(&mut app.config.optimize_png, "Enabled"));
         ui.horizontal(|ui| {

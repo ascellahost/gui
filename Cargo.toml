@@ -8,21 +8,15 @@ edition = "2021"
 strip = true
 
 [dependencies]
-eframe = "0.21"
+eframe = "0.28.1"
 egui_extras = "0"
 egui_file = "0"
-egui_tracing = { version = "0.1.0", git = "https://github.com/grievouz/egui_tracing" }
-egui-notify = { version = "0.6.0", git = "https://github.com/ItsEthra/egui-notify", branch = "better-icons" }
+egui-notify = { version = "0.15.0" }
 home = "0"
 bytes = "1"
 color-hex = "0"
 config = "0"
 parking_lot = { version = "0", features = ["serde"] }
-reqwest = { version = "0.11", default-features = false, features = [
-    "multipart",
-    "stream",
-    "rustls-tls"
-] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", default-features = false, features = [
@@ -32,26 +26,32 @@ tokio = { version = "1", default-features = false, features = [
     "sync",
     "macros",
     "process",
-    "fs"
+    "fs",
 ] }
 chrono = "0"
 tokio-util = { version = "0.7.8", features = ["codec"] }
 tracing = "0"
 toml = "0"
 anyhow = "1"
-toml_edit = { version = "0", features = ["serde"] }
+toml_edit = { version = "0.22.20", features = ["serde"] }
 tracing-subscriber = { version = "0.3.17", features = [
     "parking_lot",
     "once_cell",
     "tracing",
-    "env-filter"
+    "env-filter",
 ] }
 clap = { version = "4", features = ["derive", "env", "cargo"] }
-hyper = { version = "0.14.26", features = ["http1", "server"] }
-oxipng = { version = "8.0.0", default-features = false, features = [
-    "parallel"
+oxipng = { version = "9.1.2", default-features = false, features = [
+    "parallel",
 ] }
-notify-rust = { version = "4.8.0", features = ["images"] }
+notify-rust = { version = "4.11.1" }
+egui_tracing_rs = "0.3.1"
+sha2 = "0.10.8"
+hmac = "0.12.1"
+base64 = "0.22.1"
+hex = "0.4.3"
+aws-sign-v4 = "0.3.0"
+aws-sdk-s3 = "1.43.0"
 
 [target.'cfg(not(linux))'.dependencies]
 clipboard2 = "0"
@@ -72,7 +72,19 @@ depends = "$auto"
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/ascella", "usr/bin/ascella", "755"],
-    ["LICENSE", "usr/share/doc/ascella/LICENSE", "644"],
-    ["README.md", "usr/share/doc/ascella/README.md", "644"],
+    [
+        "target/release/ascella",
+        "usr/bin/ascella",
+        "755",
+    ],
+    [
+        "LICENSE",
+        "usr/share/doc/ascella/LICENSE",
+        "644",
+    ],
+    [
+        "README.md",
+        "usr/share/doc/ascella/README.md",
+        "644",
+    ],
 ]

@@ -6,8 +6,6 @@ use eframe::{
 };
 use egui_file::FileDialog;
 use egui_notify::Toasts;
-use egui_tracing::EventCollector;
-use reqwest::{header::HeaderValue, Method};
 use serde::Deserialize;
 use serde_json::Value;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
@@ -15,7 +13,7 @@ use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use crate::{
     ascella_config::AscellaConfig,
     easy_mark,
-    screens::{self, history::AscellaFile},
+    screens::{self},
     theme::{set_theme, Theme},
     utils::theme_number_to_theme,
     Request, RequestResponse, RequestType,
@@ -27,7 +25,6 @@ pub enum Menu {
     Home,
     Settings,
     About,
-    History,
 }
 
 pub struct MyApp {
@@ -43,11 +40,8 @@ pub struct MyApp {
     pub user: Option<AscellaUser>,
     pub retrieving_user: bool,
 
-    pub collector: EventCollector,
-
     pub toasts: Toasts,
 
-    pub history: Vec<AscellaFile>,
     pub history_index: u64,
 }
 
@@ -56,7 +50,6 @@ impl MyApp {
         config: AscellaConfig,
         sender: UnboundedSender<Request>,
         receiver: UnboundedReceiver<RequestResponse>,
-        collector: EventCollector,
     ) -> Self {
         Self {
             menu: Menu::Home,
@@ -67,13 +60,11 @@ impl MyApp {
             open_file_dialog: None,
             opened_file: None,
             user: None,
-            collector,
             retrieving_user: false,
             toasts: Toasts::default()
                 .with_padding(Vec2::from((5.0, 5.0)))
                 .with_margin(Vec2::from((2.0, 2.0)))
                 .with_anchor(egui_notify::Anchor::TopLeft),
-            history: Vec::new(),
             history_index: 0,
         }
     }
@@ -103,7 +94,7 @@ impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.theme = theme_number_to_theme(self.config.theme);
         let theme = self.theme;
-        set_theme(ctx, theme);
+        // set_theme(ctx, theme);
 
         ctx.set_pixels_per_point(1.25);
 
@@ -121,25 +112,10 @@ impl eframe::App for MyApp {
 
         self.toasts.show(ctx);
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            if self.config.debug {
-                Window::new(RichText::new("Logs").strong().small())
-                    .resizable(true)
-                    .collapsible(true)
-                    .default_open(false)
-                    .constrain(true)
-                    .resizable(true)
-                    .show(ctx, |ui| {
-                        ui.add(egui_tracing::Logs::new(self.collector.clone()));
-                    });
-            }
-
-            match self.menu {
-                Menu::Home => screens::home::screen(self, ui, ctx).unwrap(),
-                Menu::About => easy_mark::easy_mark(ui, include_str!("../ABOUT.md")),
-                Menu::History => screens::history::screen(self, ui, ctx).unwrap(),
-                Menu::Settings => screens::settings::screen(self, ui, ctx).unwrap(),
-            }
+        egui::CentralPanel::default().show(ctx, |ui| match self.menu {
+            Menu::Home => screens::home::screen(self, ui, ctx).unwrap(),
+            Menu::About => easy_mark::easy_mark(ui, include_str!("../ABOUT.md")),
+            Menu::Settings => screens::settings::screen(self, ui, ctx).unwrap(),
         });
         egui::TopBottomPanel::bottom("bottom_nav")
             .show_separator_line(false)
@@ -183,8 +159,7 @@ impl eframe::App for MyApp {
                                     add_columns! {
                                         (0, "Home", Menu::Home),
                                         (1, "Settings", Menu::Settings),
-                                        (2, "About", Menu::About),
-                                        (3, "History", Menu::History)
+                                        (2, "About", Menu::About)
                                     }
                                 });
                             });
@@ -196,26 +171,6 @@ impl eframe::App for MyApp {
             ($data:expr) => {
                 let raw: Value = serde_json::from_slice($data).unwrap();
 
-                self.config.headers = serde_json::from_value(raw["Headers"].clone()).unwrap();
-
-                self.config.request_url = raw["RequestURL"].as_str().unwrap().to_owned();
-
-                if let Some(token) = self.config.headers.remove("ascella-token") {
-                    self.config.api_key = token.clone();
-                    let mut req = reqwest::Request::new(
-                        Method::GET,
-                        format!("{}/me", self.config.api_url).parse().unwrap(),
-                    );
-                    req.headers_mut()
-                        .append("ascella-token", HeaderValue::from_str(&token).unwrap());
-
-                    self.sender
-                        .send(Request::DoRequest {
-                            r_type: RequestType::RetrieveUser,
-                            request: req,
-                        })
-                        .ok();
-                }
                 self.toasts.info("Updated Config");
 
                 self.sender.send(Request::SaveConfig(self.config.clone())).ok();
@@ -225,64 +180,14 @@ impl eframe::App for MyApp {
         if let Some(dialog) = &mut self.open_file_dialog {
             if dialog.show(ctx).selected() {
                 if let Some(file) = dialog.path() {
-                    self.opened_file = Some(file.clone());
+                    self.opened_file = Some(file.clone().to_path_buf());
                     let raw = &fs::read(file).unwrap();
                     i_hate_borrow_checker!(raw);
                 }
             }
         }
 
-        if !self.retrieving_user && self.user.is_none() {
-            let mut req = reqwest::Request::new(Method::GET, format!("{}/me", self.config.api_url).parse().unwrap());
-            req.headers_mut()
-                .append("ascella-token", HeaderValue::from_str(&self.config.api_key).unwrap());
-
-            self.sender
-                .send(Request::DoRequest {
-                    r_type: RequestType::RetrieveUser,
-                    request: req,
-                })
-                .ok();
-            self.retrieving_user = true;
-        }
-
         match self.receiver.try_recv() {
-            Ok(RequestResponse::Request {
-                content,
-                r_type,
-                status,
-            }) => match r_type {
-                RequestType::RetrieveUser => {
-                    if status.is_success() {
-                        let data: AscellaUserEndpointResult<AscellaUser> = serde_json::from_slice(&content).unwrap();
-                        self.user = Some(data.data);
-                        self.toasts.success("Received user info");
-                    } else {
-                        self.toasts
-                            .error(format!("Failed receiving user from token {}", status,));
-                    }
-                }
-                RequestType::RequestPage => {
-                    if status.is_success() {
-                        let data: AscellaUserEndpointResult<Vec<AscellaFile>> =
-                            serde_json::from_slice(&content).unwrap();
-                        if data.data.is_empty() {
-                            self.toasts
-                                .error("Reached End....")
-                                .set_duration(Some(Duration::from_secs(1)));
-                            self.history_index -= 1;
-                        } else {
-                            self.toasts
-                                .success("Files loaded....")
-                                .set_duration(Some(Duration::from_secs(1)));
-                        }
-                        self.history.extend(data.data);
-                    } else {
-                        self.toasts
-                            .error(format!("Failed receiving history from token {}", status,));
-                    }
-                }
-            },
             Ok(RequestResponse::Toast(toast)) => {
                 self.toasts.add(toast);
             }

@@ -6,9 +6,7 @@ use crate::{ui::MyApp, Request, SendScreenshot};
 
 pub fn screen(app: &mut MyApp, ui: &mut Ui, _ctx: &egui::Context) -> Result<()> {
     ui.heading("Home");
-    if app.config.api_key.is_empty() {
-        ui.small("No access key set gallery will be local only!");
-    }
+
     if let Some(data) = &app.user {
         ui.heading(RichText::new(format!("Welcome {}!", data.name)).size(15.0));
         egui::CollapsingHeader::new("User Info").show(ui, |ui| {

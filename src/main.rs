@@ -11,9 +11,7 @@ use config::{Config, Environment, File, FileFormat};
 use eframe::egui::{self, Color32};
 
 use egui_notify::Toast;
-use egui_tracing::EventCollector;
 use request_handler::handle_event;
-use reqwest::StatusCode;
 use screenshots::ScreenshotType;
 use serde::Deserialize;
 
@@ -26,7 +24,6 @@ use tracing_subscriber::{
     Layer,
 };
 use utils::ascella_dir;
-use webserver::start_server;
 
 mod ascella_config;
 mod cli;
@@ -38,13 +35,10 @@ mod screenshots;
 mod theme;
 mod ui;
 mod utils;
-mod webserver;
+
+pub mod upload_s3;
+
 pub enum RequestResponse {
-    Request {
-        content: Bytes,
-        status: StatusCode,
-        r_type: RequestType,
-    },
     Toast(Toast),
     UpdateConfigFromStringSxcu(Vec<u8>),
 }
@@ -57,10 +51,6 @@ pub enum SendScreenshot {
 
 #[allow(clippy::enum_variant_names)]
 pub enum Request {
-    DoRequest {
-        r_type: RequestType,
-        request: reqwest::Request,
-    },
     Screenshot {
         r_type: ScreenshotType,
         send: SendScreenshot,
@@ -71,25 +61,7 @@ pub enum Request {
 }
 
 #[derive(Clone)]
-pub enum RequestType {
-    RetrieveUser,
-    RequestPage,
-}
-
-pub struct EventFilter(egui_tracing::EventCollector);
-
-impl<S> Layer<S> for EventFilter
-where
-    S: Subscriber + for<'a> LookupSpan<'a>,
-{
-    fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
-        let meta = event.metadata();
-        if meta.level() == &Level::TRACE {
-            return;
-        }
-        self.0.on_event(event, _ctx)
-    }
-}
+pub enum RequestType {}
 
 #[derive(Deserialize)]
 #[allow(dead_code)]
@@ -116,12 +88,11 @@ fn main() -> Result<()> {
         .add_source(File::new(ascella_dir().join("ascella.toml").to_str().unwrap(), FileFormat::Toml).required(false))
         .add_source(File::new(ascella_dir().join("ascella.json").to_str().unwrap(), FileFormat::Json5).required(false))
         .add_source(Environment::default())
-        .set_default("api_url", "https://api.picup.click/api/v3")?
-        .set_default("request_url", "https://api.picup.click/api/v3/upload")?
-        .set_default("api_key", "")?
-        .set_default("debug", false)?
-        .set_default("headers", HashMap::<String, String>::default())?
-        .set_default("webserver", true)?
+        .set_default("s3_url", "")?
+        .set_default("s3_access_key", "")?
+        .set_default("s3_secret_key", "")?
+        .set_default("s3_bucket", "")?
+        .set_default("public_url", "")?
         .set_default("theme", 2)?
         .set_default("optimize_png", false)?
         .set_default("optimize_timeout", 100)?
@@ -134,15 +105,6 @@ fn main() -> Result<()> {
         .build()?
         .try_deserialize()?;
 
-    let client = reqwest::Client::builder()
-        .user_agent(format!(
-            "Ascella-uploader/{} ({})",
-            env!("CARGO_PKG_VERSION"),
-            env::consts::OS
-        ))
-        .build()
-        .expect("Reqwest client did not built");
-
     // subcommand branch
     if let Some(sub) = arg.command {
         create_rt()?.block_on(async {
@@ -151,7 +113,7 @@ fn main() -> Result<()> {
                 Commands::Area { delay } => (delay, SendScreenshot::Area),
                 Commands::Window { delay } => (delay, SendScreenshot::Window),
                 Commands::Screen { delay } => (delay, SendScreenshot::Screen),
-                Commands::Upload { file } => match request_handler::upload_file(file, &config, &client, true).await {
+                Commands::Upload { file } => match request_handler::upload_file(file, &config, true).await {
                     Ok(_) => {
                         process::exit(0);
                     }
@@ -171,40 +133,28 @@ fn main() -> Result<()> {
                 send,
                 config,
             };
-            if let Err(e) = handle_event(data, &client, &sender).await {
+            if let Err(e) = handle_event(data, &sender).await {
                 tracing::error!("{e:?}");
             };
         });
         return Ok(());
     }
 
-    let collector: EventCollector = egui_tracing::EventCollector::default();
-    if !config.console_logging {
-        tracing_subscriber::registry()
-            .with(EventFilter(collector.clone()))
-            .init();
-    } else {
-        tracing_subscriber::fmt()
-            .with_max_level(tracing::Level::DEBUG)
-            .compact()
-            .init();
-    }
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .compact()
+        .init();
 
     fs::create_dir_all(ascella_dir().join("images"))?;
 
     let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel::<Request>();
     let (sender_1, receiver_1) = tokio::sync::mpsc::unbounded_channel::<RequestResponse>();
-    let webserver = config.webserver;
     thread::Builder::new()
         .name("ascella-async".to_owned())
         .spawn(move || {
             create_rt().expect("How did this happen").block_on(async {
-                if webserver {
-                    tokio::spawn(start_server(sender_1.clone()));
-                }
-
                 while let Some(data) = receiver.recv().await {
-                    if let Err(e) = handle_event(data, &client, &sender_1).await {
+                    if let Err(e) = handle_event(data, &sender_1).await {
                         tracing::error!("{e:?}");
                     };
                 }
@@ -213,15 +163,15 @@ fn main() -> Result<()> {
         .ok();
 
     let options = eframe::NativeOptions {
-        min_window_size: Some(egui::vec2(620.0, 600.0)),
-        initial_window_size: Some(egui::vec2(620.0, 600.0)),
+        // min_window_size: Some(egui::vec2(620.0, 600.0)),
+        // initial_window_size: Some(egui::vec2(620.0, 600.0)),
         ..Default::default()
     };
 
     eframe::run_native(
         "Ascella GUI",
         options,
-        Box::new(|_cc| Box::new(ui::MyApp::new(config, sender, receiver_1, collector))),
+        Box::new(|_cc| Ok(Box::new(ui::MyApp::new(config, sender, receiver_1)))),
     )
     .map_err(|e| anyhow!("{e}"))?;
     Ok(())

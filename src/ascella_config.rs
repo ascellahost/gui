@@ -7,14 +7,12 @@ use crate::{screenshots::ScreenshotType, utils::ascella_dir};
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct AscellaConfig {
-    #[serde(default)]
-    pub api_url: String,
-    #[serde(default)]
-    pub api_key: String,
-    #[serde(alias = "RequestURL")]
-    pub request_url: String,
-    #[serde(alias = "Headers")]
-    pub headers: HashMap<String, String>,
+    pub s3_url: String,
+    pub s3_access_key: String,
+    pub s3_secret_key: String,
+    pub s3_bucket: String,
+    pub public_url: String,
+
     pub debug: bool,
     pub s_type: ScreenshotType,
     pub webserver: bool,

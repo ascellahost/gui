@@ -12,6 +12,7 @@ use eframe::{
 
 /// Apply the given theme to a [`Context`](egui::Context).
 /// from my testing this doesn't take more than 3µs so doesnt need to be optimized
+#[allow(dead_code)]
 pub fn set_theme(ctx: &egui::Context, theme: Theme) {
     let old = if theme.light { Visuals::light() } else { Visuals::dark() };
     ctx.set_visuals(egui::Visuals {
@@ -45,7 +46,7 @@ pub fn set_theme(ctx: &egui::Context, theme: Theme) {
         ..old
     });
 }
-
+#[allow(dead_code)]
 fn make_widget_visual(old: style::WidgetVisuals, theme: &Theme, bg_fill: egui::Color32) -> style::WidgetVisuals {
     style::WidgetVisuals {
         bg_fill,

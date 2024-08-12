@@ -46,7 +46,7 @@ pub async fn s3_upload(config: &AscellaConfig, name: String, data: Vec<u8>) -> a
 
     let body = ByteStream::from(data);
 
-    let resp = client
+    let _resp = client
         .put_object()
         .bucket(bucket)
         .key(name)

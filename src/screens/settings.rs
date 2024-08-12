@@ -1,7 +1,5 @@
 use anyhow::Result;
 use eframe::egui::{self, RichText, Ui};
-use egui_extras::{Column, TableBuilder};
-use egui_file::FileDialog;
 
 use crate::{ui::MyApp, utils::theme_to_name, Request, ScreenshotType};
 

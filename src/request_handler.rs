@@ -1,10 +1,4 @@
-use std::{
-    ffi::OsStr,
-    io::{ErrorKind, Write},
-    os::unix::prelude::OsStrExt,
-    path::PathBuf,
-    time::Duration,
-};
+use std::{ffi::OsStr, io::ErrorKind, os::unix::prelude::OsStrExt, path::PathBuf, time::Duration};
 
 use egui_notify::Toast;
 use tokio::{process::Command, sync::mpsc::UnboundedSender};

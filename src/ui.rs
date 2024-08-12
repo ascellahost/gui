@@ -1,22 +1,18 @@
-use std::{fs, path::PathBuf, time::Duration};
-
 use eframe::{
-    egui::{self, Button, Frame, Margin, RichText, Rounding, Window},
+    egui::{self, Button, Frame, Margin, Rounding},
     epaint::Vec2,
 };
-use egui_file::FileDialog;
 use egui_notify::Toasts;
 use serde::Deserialize;
-use serde_json::Value;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 use crate::{
     ascella_config::AscellaConfig,
     easy_mark,
     screens::{self},
-    theme::{set_theme, Theme},
+    theme::Theme,
     utils::theme_number_to_theme,
-    Request, RequestResponse, RequestType,
+    Request, RequestResponse,
 };
 
 #[derive(PartialEq, Default, Debug)]
@@ -30,19 +26,14 @@ pub enum Menu {
 pub struct MyApp {
     pub menu: Menu,
     pub config: AscellaConfig,
-    pub opened_file: Option<PathBuf>,
-    pub open_file_dialog: Option<FileDialog>,
     pub theme: Theme,
 
     pub sender: UnboundedSender<Request>,
     pub receiver: UnboundedReceiver<RequestResponse>,
 
     pub user: Option<AscellaUser>,
-    pub retrieving_user: bool,
 
     pub toasts: Toasts,
-
-    pub history_index: u64,
 }
 
 impl MyApp {
@@ -57,15 +48,11 @@ impl MyApp {
             config,
             sender,
             receiver,
-            open_file_dialog: None,
-            opened_file: None,
             user: None,
-            retrieving_user: false,
             toasts: Toasts::default()
                 .with_padding(Vec2::from((5.0, 5.0)))
                 .with_margin(Vec2::from((2.0, 2.0)))
                 .with_anchor(egui_notify::Anchor::TopLeft),
-            history_index: 0,
         }
     }
 }
@@ -167,32 +154,10 @@ impl eframe::App for MyApp {
                 );
             });
 
-        macro_rules! i_hate_borrow_checker {
-            ($data:expr) => {
-                let raw: Value = serde_json::from_slice($data).unwrap();
-
-                self.toasts.info("Updated Config");
-
-                self.sender.send(Request::SaveConfig(self.config.clone())).ok();
-            };
-        }
-
-        if let Some(dialog) = &mut self.open_file_dialog {
-            if dialog.show(ctx).selected() {
-                if let Some(file) = dialog.path() {
-                    self.opened_file = Some(file.clone().to_path_buf());
-                    let raw = &fs::read(file).unwrap();
-                    i_hate_borrow_checker!(raw);
-                }
-            }
-        }
-
+        #[allow(clippy::single_match)]
         match self.receiver.try_recv() {
             Ok(RequestResponse::Toast(toast)) => {
                 self.toasts.add(toast);
-            }
-            Ok(RequestResponse::UpdateConfigFromStringSxcu(data)) => {
-                i_hate_borrow_checker!(&data);
             }
             _ => {}
         }

@@ -1,14 +1,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
-use std::{collections::HashMap, env, fs, process, thread, time::Duration};
+use std::{fs, process, thread, time::Duration};
 
 use anyhow::{anyhow, Result};
 use ascella_config::AscellaConfig;
-use bytes::Bytes;
 use clap::Parser;
 use cli::{AscellaCli, Commands};
 use config::{Config, Environment, File, FileFormat};
-use eframe::egui::{self, Color32};
+use eframe::egui::Color32;
 
 use egui_notify::Toast;
 use request_handler::handle_event;
@@ -16,13 +15,6 @@ use screenshots::ScreenshotType;
 use serde::Deserialize;
 
 use tokio::runtime::Runtime;
-use tracing::{Event, Level, Subscriber};
-use tracing_subscriber::{
-    layer::{Context, SubscriberExt},
-    registry::LookupSpan,
-    util::SubscriberInitExt,
-    Layer,
-};
 use utils::ascella_dir;
 
 mod ascella_config;
@@ -40,7 +32,6 @@ pub mod upload_s3;
 
 pub enum RequestResponse {
     Toast(Toast),
-    UpdateConfigFromStringSxcu(Vec<u8>),
 }
 
 pub enum SendScreenshot {
